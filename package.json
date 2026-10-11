@@ -1,0 +1,9 @@
+{
+  "name": "local-pi-provider-bridge-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "desktop-provider-ai": "npm:@earendil-works/pi-ai@0.84.2",
+    "jiti": "^2.7.0"
+  }
+}
