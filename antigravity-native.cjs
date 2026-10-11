@@ -4,7 +4,7 @@ const {pathToFileURL}=require('node:url');
 const {randomBytes}=require('node:crypto');
 const {createJiti}=require('jiti');
 const PROVIDER_ID='antigravity-gemini-subscription';
-const PORT=51122;
+const PORT=51124;
 const isProviderId = value => value === PROVIDER_ID || /^antigravity-gemini-subscription-\d+$/.test(value);
 let runtimePromise;
 async function loadSdk(){
@@ -54,7 +54,7 @@ function decode(native){
 }
 function createHandler(getRuntime=runtime){
  return async(input,{signal})=>{
-  if(input.providerId!=='antigravity-gemini-subscription')throw new Error('Unsupported Antigravity subscription');
+  if(!isProviderId(input.providerId))throw new Error('Unsupported Antigravity subscription');
   signal?.throwIfAborted();
   const {api,gateway}=await getRuntime();
   signal?.throwIfAborted();
@@ -81,4 +81,4 @@ function createHandler(getRuntime=runtime){
 }
 // loadSecret is exported so the quota callback can verify the gateway's own signed
 // envelope with the same machine key that produced it, instead of trusting it.
-module.exports={PROVIDER_ID,PORT,onLoad,onUnload,onProviderOAuth:createHandler(),createHandler,createRuntime,encode,decode,loadSdk,loadSecret};
+module.exports={PROVIDER_ID,PORT,isProviderId,onLoad,onUnload,onProviderOAuth:createHandler(),createHandler,createRuntime,encode,decode,loadSdk,loadSecret};

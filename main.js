@@ -19,7 +19,7 @@ async function subscriptionUsage(input, context) {
   if (GO_CONTRIBUTIONS.includes(input.providerId)) {
     return quota.queryOpenCodeGo(input.credential, context.signal);
   }
-  if (input.providerId === 'antigravity-gemini-subscription') {
+  if (antigravity.isProviderId(input.providerId)) {
     // The stored Antigravity access token is this gateway's signed envelope, so
     // verify it with the plugin's own machine key. Treating it as a Google bearer
     // token would leak the envelope and fail upstream anyway.
@@ -38,7 +38,7 @@ module.exports = {
   onProviderOAuth: (input, context) => {
     // `usage` is additive: login and refresh keep their existing handlers.
     if (input.operation === 'usage') return subscriptionUsage(input, context);
-    return input.providerId === 'antigravity-gemini-subscription'
+    return antigravity.isProviderId(input.providerId)
       ? antigravity.onProviderOAuth(input, context)
       : go.onProviderOAuth(input, context);
   },

@@ -327,7 +327,7 @@ function createGateway({ secret, models, stream, signatureStore, maxBodyBytes = 
   }
   return {
     signCredential: value => signCredential(secret, value),
-    async start(port = 51122, host = '127.0.0.1') {
+    async start(port = 51124, host = '127.0.0.1') {
       if (host !== '127.0.0.1' || !Number.isInteger(port) || port < 0 || port > 65535) throw new TypeError('Loopback host and valid port required');
       if (server || closing) throw new Error('Gateway already started');
       const candidate = http.createServer({ maxHeaderSize: 32768 }, handler);

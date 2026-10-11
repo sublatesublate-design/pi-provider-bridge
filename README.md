@@ -2,12 +2,12 @@
 
 Agent extension `local.pi-provider-bridge` supports Antigravity account slots (`antigravity`, `antigravity-2` … `antigravity-8`) and `opencode-console` / `opencode-go-console`.
 
-## Loopback port relocation (0.5.3)
+## Loopback ports (0.5.4)
 
 Windows reserved the whole TCP block 50080–54360 on this machine (Hyper-V/HNS container networking; `netsh interface ipv4 show excludedportrange` does not list it). Nothing listens there, yet `bind` fails with `EADDRINUSE` on every interface and for every process, so both former ports were unusable forever:
 
-- gateway: `127.0.0.1:41122` (`manifest.json` `baseUrl`, `antigravity-native.cjs` `PORT`, and the `antigravity-gateway.cjs` default)
-- Google OAuth callback: `localhost:41121` (`vendor/antigravity/auth/oauth.ts`; `ANTIGRAVITY_CALLBACK_PORT` overrides it). The gateway and callback use separate loopback ports so a gateway bind failure cannot block OAuth setup.
+- gateway: `127.0.0.1:51124` (`manifest.json` `baseUrl`, `antigravity-native.cjs` `PORT`, and the `antigravity-gateway.cjs` default)
+- Google OAuth callback: `localhost:51123` (`vendor/antigravity/auth/oauth.ts`; `ANTIGRAVITY_CALLBACK_PORT` overrides it). The gateway and callback use separate loopback ports so a gateway bind failure cannot block OAuth setup.
 
 Keep one directory loaded per plugin id: `plugins/providers`, `plugins/providers-backup-0.4.0` and `plugins/providers-quota` all declare `local.pi-provider-bridge`, and the first two still carry the old ports.
 
@@ -18,19 +18,19 @@ The four declared providers now declare `vendorKey` plus `oauth.subscriptionUsag
 - OpenCode Go (all three declarations) reads `https://opencode.ai/inference/go/v1/usage` and maps `usage.rolling/weekly/monthly` to the 5h, weekly and monthly windows. Verified against the live account: HTTP 200. The public `https://opencode.ai/zen/go/v1` gateway answers 401 for a subscription token, so it is not a fallback.
 - Antigravity verifies the gateway's signed envelope with its own machine key (`loadSecret`), then reads `POST {project}/v1internal:fetchAvailableModels` per declared model. Verified against the live account. The request must carry the vendor CLI `User-Agent`: without it every endpoint candidate answers 429, with it the same request succeeds.
 
-The plugin needs `net.fetch` for those reads; the Host refuses egress outside `net.domains` (`opencode.ai`, the three `cloudcode-pa` hosts) and refuses unknown response bodies. The gateway binds to 127.0.0.1:41122 and the OAuth callback binds to localhost:41121.
+The plugin needs `net.fetch` for those reads; the Host refuses egress outside `net.domains` (`opencode.ai`, the three `cloudcode-pa` hosts) and refuses unknown response bodies. The gateway binds to 127.0.0.1:51124 and the OAuth callback binds to localhost:51123.
 
 To roll back: restore `manifest.json`, `main.js` and `antigravity-native.cjs` from `../providers-backup-0.4.0/` and delete `provider-adapters.cjs`.
 
 ## Antigravity Gemini native subscription (0.4.0)
 
-Use Plugins > Load development plugin and re-select this plugin directory (do not uninstall). Settings > AI Models > Subscriptions then declares **Antigravity Gemini (Google Subscription)**. Google login uses the original Antigravity Authorization Code + PKCE/state flow and localhost callback on port 41121; Desktop owns encrypted credentials and renewal. No original TUI auth/settings are read or written by this native login path, and previous imported session credentials are not silently copied into native accounts.
+Use Plugins > Load development plugin and re-select this plugin directory (do not uninstall). Settings > AI Models > Subscriptions then declares three independent Antigravity slots: **Antigravity Gemini (Google Subscription)**, **Antigravity Gemini (Google Subscription) · 2**, and **Antigravity Gemini (Google Subscription) · 3**. Google login uses the original Antigravity Authorization Code + PKCE/state flow and localhost callback on port 51123; Desktop owns encrypted credentials and renewal. No original TUI auth/settings are read or written by this native login path, and previous imported session credentials are not silently copied into native accounts.
 
-Desktop's native request style is OpenAI-compatible only at the boundary: the plugin owns an authenticated HTTP gateway on **127.0.0.1:41122**, which converts messages/tools/SSE to the original Antigravity stream. Full source model descriptions and cached routing/enums are retained; no upstream wire protocol is reimplemented. A signed local bearer contains Google access/project information; its HMAC key is Windows DPAPI-encrypted in the plugin data directory, separate from Google refresh metadata in Desktop's encrypted store. Never share that local bearer or paste it into URLs. The gateway binds loopback only, rejects browser Origin requests, and never allows arbitrary fetch targets. Unload closes the listener and cancels active requests; port/key errors fail closed. Do not expose this port externally.
+Desktop's native request style is OpenAI-compatible only at the boundary: the plugin owns an authenticated HTTP gateway on **127.0.0.1:51124**, which converts messages/tools/SSE to the original Antigravity stream. Full source model descriptions and cached routing/enums are retained; no upstream wire protocol is reimplemented. A signed local bearer contains Google access/project information; its HMAC key is Windows DPAPI-encrypted in the plugin data directory, separate from Google refresh metadata in Desktop's encrypted store. Never share that local bearer or paste it into URLs. The gateway binds loopback only, rejects browser Origin requests, and never allows arbitrary fetch targets. Unload closes the listener and cancels active requests; port/key errors fail closed. Do not expose this port externally.
 
 The native manifest declares all 11 previously discovered Gemini IDs (not Claude/other models). Display labels use explicit model IDs because older IDs may be aliases in the original routing table. The snapshot does not prove account entitlements and does not auto-discover new models. OAuth, stream conversion, tools, images, cancellation and actual Desktop login/inference must be distinguished in validation results. Images are supported only as bounded data URIs at the local boundary, not arbitrary remote URL downloads.
 
-If the gateway port 41122 is unavailable, stop the stale gateway process/plugin before reloading. A port that nothing listens on yet still fails with `EADDRINUSE` is reserved by Windows; move the gateway port instead of hunting for a holder. Google callback port 41121 must be free during sign-in and is overridable with `ANTIGRAVITY_CALLBACK_PORT`. To disable the native Gemini service, disable this plugin; do not delete or overwrite TUI credentials. OpenCode Go declarations and account IDs are unchanged.
+If the gateway port 51124 is unavailable, stop the stale gateway process/plugin before reloading. A port that nothing listens on yet still fails with `EADDRINUSE` is reserved by Windows; move the gateway port instead of hunting for a holder. Google callback port 51123 must be free during sign-in and is overridable with `ANTIGRAVITY_CALLBACK_PORT`. To disable the native Gemini service, disable this plugin; do not delete or overwrite TUI credentials. OpenCode Go declarations and account IDs are unchanged.
 
 Validation completed: 51 tests across antigravity-gateway, antigravity-native, native-catalog, native-oauth and provider-bridge pass. Coverage includes HMAC rejection, loopback-only binding, body limits, browser-origin rejection, text/thinking/tool SSE, usage, cancellation/unload, Google native OAuth mock flows, real original SDK with mocked Google SSE, and an OpenAI SDK client consuming the gateway. PluginCheck passes; the running loopback endpoint rejects unauthenticated requests with HTTP 401. No real Google sign-in or paid/subscription inference was performed by these tests.
 
