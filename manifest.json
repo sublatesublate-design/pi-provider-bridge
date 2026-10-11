@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "local.pi-provider-bridge",
   "name": "TUI Provider Bridge (Desktop)",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Native Antigravity Google subscription for Gemini through an authenticated loopback gateway; OpenCode Go retained. Both subscriptions expose read-only quota to the Host.",
   "main": "main.js",
   "contributes": {
@@ -13,7 +13,7 @@
       {
         "id": "antigravity-gemini-subscription",
         "name": "Antigravity Gemini (Google Subscription)",
-        "baseUrl": "http://127.0.0.1:51122/v1",
+        "baseUrl": "http://127.0.0.1:51124/v1",
         "apiStyle": "chat_completions",
         "authKind": "oauth",
         "vendorKey": "antigravity",
@@ -295,7 +295,7 @@
       {
         "id": "antigravity-gemini-subscription-2",
         "name": "Antigravity Gemini (Google Subscription) · 2",
-        "baseUrl": "http://127.0.0.1:51122/v1",
+        "baseUrl": "http://127.0.0.1:51124/v1",
         "apiStyle": "chat_completions",
         "authKind": "oauth",
         "vendorKey": "antigravity",
@@ -387,7 +387,7 @@
       {
         "id": "antigravity-gemini-subscription-3",
         "name": "Antigravity Gemini (Google Subscription) · 3",
-        "baseUrl": "http://127.0.0.1:51122/v1",
+        "baseUrl": "http://127.0.0.1:51124/v1",
         "apiStyle": "chat_completions",
         "authKind": "oauth",
         "vendorKey": "antigravity",
@@ -618,5 +618,26 @@
   },
   "activationEvents": [
     "onStartup"
-  ]
-}\n
+  ],
+  "author": "sublatesublate-design",
+  "i18n": {
+    "en": {
+      "name": "TUI Provider Bridge (Desktop)",
+      "description": "Native Antigravity Google subscription for Gemini through an authenticated loopback gateway; OpenCode Go retained. Both subscriptions expose read-only quota to the Host.",
+      "safetyNotes": "Uses OAuth credentials supplied by the user, keeps the gateway on loopback, and sends quota requests only to the declared provider domains."
+    },
+    "zh-CN": {
+      "name": "桌面端供应商桥接",
+      "description": "为 Antigravity 和 OpenCode Go 订阅提供登录、模型桥接和只读额度查询。",
+      "safetyNotes": "使用用户主动登录取得的 OAuth 凭据；网关仅监听本机回环地址；额度请求仅发送到清单声明的服务域名。"
+    }
+  },
+  "categories": [
+    "developer-tools",
+    "productivity"
+  ],
+  "changelog": {
+    "en": "Adds three independent Antigravity account slots and moves the gateway and OAuth callback to verified available loopback ports.",
+    "zh-CN": "新增三个独立的 Antigravity 账户槽位，并将网关和 OAuth 回调迁移到已验证可用的本机端口。"
+  }
+}

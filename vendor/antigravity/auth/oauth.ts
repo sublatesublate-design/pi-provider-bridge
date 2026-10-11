@@ -7,7 +7,7 @@ import { resolveCallbackHost, redactSecrets } from "../utils/security.js";
 import type { AntigravityOAuthCredentials, CallbackServer } from "../types/types.js";
 
 /** Loopback callback port. Google accepts any loopback port for this desktop client. */
-export const CALLBACK_PORT = Number(antigravityEnv("CALLBACK_PORT")) || 41121;
+export const CALLBACK_PORT = Number(antigravityEnv("CALLBACK_PORT")) || 51123;
 export const REDIRECT_URI = `http://localhost:${CALLBACK_PORT}/oauth-callback`;
 export const AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 export const TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -239,7 +239,7 @@ function parsePastedCallback(raw: string, expectedState: string): { code: string
 /**
  * Resolve the authorization code from either the local callback server (browser
  * on the same machine) or a pasted callback URL (browser on a remote/headless
- * machine that cannot reach localhost:41121). Whichever provides a valid code
+ * machine that cannot reach localhost:51123). Whichever provides a valid code
  * first wins; the losing path is cancelled. Honors callbacks.signal for cancel.
  */
 async function acquireAuthCode(
